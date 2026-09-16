@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/agent-platform/runtime-contract.schema.json",
+  "title": "Auditable Agent Runtime MVP Contract",
+  "type": "object",
+  "required": ["schemaVersion", "run", "toolCall", "workflowNode", "auditEvent"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "run": { "$ref": "#/$defs/run" },
+    "toolCall": { "$ref": "#/$defs/toolCall" },
+    "workflowNode": { "$ref": "#/$defs/workflowNode" },
+    "auditEvent": { "$ref": "#/$defs/auditEvent" }
+  },
+  "$defs": {
+    "id": { "type": "string", "minLength": 10, "maxLength": 100, "pattern": "^[A-Za-z0-9_-]+$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "run": {
+      "type": "object",
+      "required": ["runId", "tenantId", "agentVersionId", "attemptId", "status", "checkpointVersion", "createdAt", "updatedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "runId": { "$ref": "#/$defs/id" },
+        "tenantId": { "$ref": "#/$defs/id" },
+        "agentVersionId": { "$ref": "#/$defs/id" },
+        "attemptId": { "$ref": "#/$defs/id" },
+        "status": { "enum": ["accepted", "preparing", "running", "waiting_approval", "completed", "failed", "cancelled", "timed_out", "budget_exceeded"] },
+        "checkpointVersion": { "type": "integer", "minimum": 0 },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "updatedAt": { "$ref": "#/$defs/timestamp" },
+        "finishedAt": { "anyOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] }
+      }
+    },
+    "toolCall": {
+      "type": "object",
+      "required": ["toolCallId", "runId", "tenantId", "status", "toolVersion", "createdAt"],
+      "additionalProperties": false,
+      "properties": {
+        "toolCallId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "tenantId": { "$ref": "#/$defs/id" },
+        "status": { "enum": ["created", "validating", "pending_approval", "executing", "rejected", "expired", "succeeded", "failed", "timed_out", "retry_scheduled", "permanently_failed"] },
+        "toolVersion": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "idempotencyKey": { "type": "string", "minLength": 16, "maxLength": 100 },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "finishedAt": { "anyOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] }
+      }
+    },
+    "workflowNode": {
+      "type": "object",
+      "required": ["nodeId", "runId", "status", "updatedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "nodeId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "status": { "enum": ["pending", "ready", "running", "succeeded", "failed", "skipped"] },
+        "onError": { "enum": ["stop", "continue"] },
+        "updatedAt": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "auditEvent": {
+      "type": "object",
+      "required": ["eventId", "schemaVersion", "tenantId", "occurredAt", "action", "resourceType", "result", "requestId", "metadataRedacted"],
+      "additionalProperties": false,
+      "properties": {
+        "eventId": { "$ref": "#/$defs/id" },
+        "schemaVersion": { "type": "integer", "const": 1 },
+        "tenantId": { "$ref": "#/$defs/id" },
+        "occurredAt": { "$ref": "#/$defs/timestamp" },
+        "principalId": { "anyOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+        "action": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "resourceType": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "resourceId": { "anyOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+        "result": { "enum": ["success", "denied", "failure"] },
+        "reasonCode": { "type": "string", "maxLength": 100 },
+        "requestId": { "$ref": "#/$defs/id" },
+        "correlationId": { "$ref": "#/$defs/id" },
+        "metadataRedacted": { "type": "object", "maxProperties": 30, "additionalProperties": true }
+      }
+    }
+  }
+}

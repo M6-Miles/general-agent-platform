@@ -1,0 +1,13 @@
+{
+  "name": "auditable-agent-runtime-e2e",
+  "private": true,
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:isolated": "playwright test",
+    "test:e2e:reuse": "node scripts/playwright_reuse.js"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.52.0"
+  }
+}

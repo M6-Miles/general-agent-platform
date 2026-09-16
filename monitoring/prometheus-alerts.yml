@@ -1,0 +1,28 @@
+groups:
+  - name: agent-runtime
+    rules:
+      - alert: AgentApiUnavailable
+        expr: up{job="agent-api"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations: { summary: "Agent API unavailable", runbook: "project/docs/deployment-runbook.md" }
+      - alert: AgentWorkerFailures
+        expr: increase(agent_worker_runs_failed[5m]) > 5
+        for: 5m
+        labels: { severity: warning }
+        annotations: { summary: "Worker failures increased", runbook: "project/docs/deployment-runbook.md" }
+      - alert: AgentQueueClaimsStalled
+        expr: increase(agent_worker_runs_claimed[10m]) > 0 and increase(agent_worker_runs_completed[10m]) == 0
+        for: 10m
+        labels: { severity: warning }
+        annotations: { summary: "Runs claimed without completion", runbook: "project/docs/deployment-runbook.md" }
+      - alert: AgentApprovalBacklog
+        expr: agent_approval_pending_count > 10
+        for: 10m
+        labels: { severity: info }
+        annotations: { summary: "Approval backlog exceeds 10", runbook: "project/docs/deployment-runbook.md" }
+      - alert: AgentToolErrorsHigh
+        expr: rate(agent_tool_call_errors_total[5m]) > 0.1
+        for: 2m
+        labels: { severity: warning }
+        annotations: { summary: "Tool error rate is high", runbook: "project/docs/deployment-runbook.md" }

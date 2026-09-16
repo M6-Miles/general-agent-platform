@@ -1,0 +1,31 @@
+/* 新版样式系统主入口 */
+
+/* 1. 设计令牌 - 最先加载 */
+@import './tokens/colors.css';
+@import './tokens/spacing.css';
+@import './tokens/typography.css';
+@import './tokens/shadows.css';
+@import './tokens/radius.css';
+@import './tokens/transitions.css';
+
+/* 2. 基础样式 */
+@import './base/reset.css';
+@import './base/globals.css';
+
+/* 3. 组件样式 */
+@import './components/button.css';
+@import './components/input.css';
+@import './components/card.css';
+@import './components/badge.css';
+@import './components/modal.css';
+@import './components/table.css';
+
+/* 4. 布局样式 */
+@import './layouts/workspace.css';
+@import './layouts/auth.css';
+
+/* 5. 页面样式 */
+@import './pages/dashboard.css';
+
+/* 6. 全站重制层：统一覆盖历史样式，避免组件规则互相污染 */
+@import './overhaul.css';

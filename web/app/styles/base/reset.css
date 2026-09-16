@@ -1,0 +1,118 @@
+/* 现代 CSS Reset */
+
+/* 1. 使用更直观的盒模型 */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2. 移除默认边距和填充 */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* 3. 改进媒体元素的默认样式 */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* 4. 移除表单元素的默认样式 */
+input, button, textarea, select {
+  font: inherit;
+}
+
+/* 5. 避免文本溢出 */
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+/* 6. 改进行高 */
+body {
+  line-height: var(--line-height-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 7. 移除列表样式 */
+ul, ol {
+  list-style: none;
+}
+
+/* 8. 移除按钮样式 */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* 9. 移除链接下划线 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 10. 改进表格样式 */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* 11. 改进表单元素 */
+input, textarea, select, button {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* 12. 移除 number 输入的箭头 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* 13. 改进 focus 样式 */
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+
+/* 14. 隐藏滚动条但保持功能 */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 15. 自定义滚动条样式 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-neutral-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+
+/* 16. 改进选择文本样式 */
+::selection {
+  background: var(--color-brand-200);
+  color: var(--color-text-primary);
+}

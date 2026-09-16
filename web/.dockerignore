@@ -1,0 +1,10 @@
+node_modules
+.next
+.next-*
+.next-e2e-*
+.next-manual-*
+../models
+../data
+../.archive
+../.venv-task*/
+npm-debug.log*

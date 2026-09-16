@@ -1,0 +1,47 @@
+:root {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-500: #737373;
+  --color-neutral-700: #404040;
+  --color-neutral-900: #171717;
+  --color-success-100: #dcfce7;
+  --color-success-600: #16a34a;
+  --color-warning-100: #fef3c7;
+  --color-warning-600: #d97706;
+  --color-error-100: #fee2e2;
+  --color-error-600: #dc2626;
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+}
+
+.ui-loading { display: inline-flex; align-items: center; gap: 8px; color: var(--muted, #737373); }
+.ui-loading-spinner { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ui-spin .7s linear infinite; }
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+.ui-modal-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: rgb(15 23 42 / .45); }
+.ui-modal { width: min(100%, 520px); background: #fff; border: 1px solid var(--line, #d4d4d4); border-radius: 8px; box-shadow: 0 20px 60px rgb(15 23 42 / .2); }
+.ui-modal header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line, #e5e5e5); }
+.ui-modal header h2 { margin: 0; font-size: 18px; }
+.ui-modal-body { padding: 20px; }
+.icon-button { border: 0; background: transparent; cursor: pointer; font-size: 22px; line-height: 1; }
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-2);border-radius:var(--radius-md);font-weight:600}.btn-sm{height:2rem;padding:0 var(--spacing-3);font-size:12px}.btn-md{height:2.5rem;padding:0 var(--spacing-4);font-size:14px}.btn-lg{height:3rem;padding:0 var(--spacing-6);font-size:16px}.btn-primary{background:var(--color-primary-600);color:#fff}.btn-secondary{background:var(--color-neutral-100);color:var(--color-neutral-900);border:1px solid var(--color-neutral-300)}.btn-ghost{background:transparent;color:var(--color-neutral-700)}.btn-danger{background:var(--color-error-600);color:#fff}.btn:disabled{opacity:.5;cursor:not-allowed}.btn-loading{position:relative;color:transparent}.btn-spinner{position:absolute;animation:ui-spin 1s linear infinite}@keyframes ui-spin{to{transform:rotate(360deg)}}
+.card{background:#fff;border-radius:var(--radius-md)}.card-default{border:1px solid var(--color-neutral-200)}.card-bordered{border:2px solid var(--color-neutral-300)}.card-elevated{border:1px solid var(--color-neutral-200);box-shadow:var(--shadow-sm)}.card-padding-none{padding:0}.card-padding-sm{padding:var(--spacing-4)}.card-padding-md{padding:var(--spacing-6)}.card-padding-lg{padding:var(--spacing-8)}
+.ui-badge{display:inline-flex;align-items:center;gap:var(--spacing-1);border-radius:var(--radius-full);font-weight:600}.ui-badge-sm{padding:var(--spacing-1) var(--spacing-2);font-size:12px}.ui-badge-md{padding:var(--spacing-1) var(--spacing-3);font-size:12px}.ui-badge-lg{padding:var(--spacing-2) var(--spacing-4);font-size:14px}.ui-badge-default{background:var(--color-neutral-100);color:var(--color-neutral-700)}.ui-badge-primary{background:var(--color-primary-100);color:var(--color-primary-700)}.ui-badge-success{background:var(--color-success-100);color:var(--color-success-600)}.ui-badge-warning{background:var(--color-warning-100);color:var(--color-warning-600)}.ui-badge-error{background:var(--color-error-100);color:var(--color-error-600)}.ui-badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.ui-input{width:100%;height:2.5rem;padding:0 var(--spacing-3);border:1px solid var(--color-neutral-300);border-radius:var(--radius-md);font-size:14px}.ui-input:focus{outline:0;border-color:var(--color-primary-500);box-shadow:0 0 0 3px var(--color-primary-100)}.input-wrapper{display:flex;flex-direction:column;gap:var(--spacing-2)}.input-label{font-size:14px;font-weight:600;color:var(--color-neutral-700)}.input-container{position:relative;display:flex;align-items:center}.input-error-text{font-size:12px;color:var(--color-error-600)}.input-help-text{font-size:12px;color:var(--color-neutral-500)}

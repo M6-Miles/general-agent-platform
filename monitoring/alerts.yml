@@ -1,0 +1,18 @@
+groups:
+  - name: agent-runtime
+    rules:
+      - alert: AgentApiDown
+        expr: up{job="agent-api"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: "Agent API is unavailable", runbook: "docs/runbooks/operations.md"}
+      - alert: AgentApiLowHealth
+        expr: absent(agent_process_uptime_seconds)
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Agent API metrics are stale", runbook: "docs/runbooks/operations.md"}
+      - alert: AgentRunFailureRateHigh
+        expr: increase(agent_worker_runs_failed[5m]) > 5
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: "Run execution failures increased", runbook: "docs/runbooks/operations.md"}

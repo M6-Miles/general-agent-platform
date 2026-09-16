@@ -1,0 +1,16 @@
+name: performance (optional)
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: REST service URL
+        required: true
+        default: http://localhost:8000
+jobs:
+  k6:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: grafana/setup-k6-action@v1
+      - run: k6 run tests/performance/api_load.js --vus 10 --duration 30s
+        env: { BASE_URL: ${{ inputs.base_url }} }

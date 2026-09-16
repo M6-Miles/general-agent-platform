@@ -1,0 +1,138 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install '.[test,lint]'
+      - run: ruff check app migrations scripts tests
+      - run: python scripts/check_repo_hygiene.py
+      - run: pytest --cov=app --cov-report=html --cov-report=term --junitxml=test-results/junit.xml
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '20', cache: npm, cache-dependency-path: web/package-lock.json}
+      - run: npm ci --prefix web
+      - run: npm test --prefix web -- --run --reporter=dot
+
+  postgres-rls:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: agent
+          POSTGRES_PASSWORD: agent
+          POSTGRES_DB: agent_runtime
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U agent -d agent_runtime"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install '.[test,lint]'
+      - name: Apply migrations
+        env:
+          SECRET_KEY: ci-secret-key-with-at-least-32-characters
+          DATABASE_URL: postgresql+psycopg://agent:agent@localhost:5432/agent_runtime
+        run: alembic upgrade head
+      - name: Provision verifier role
+        env:
+          PGPASSWORD: agent
+        run: |
+          psql -h localhost -U agent -d agent_runtime -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$ BEGIN CREATE ROLE rls_verifier LOGIN PASSWORD 'rls_verifier'; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+          GRANT CONNECT ON DATABASE agent_runtime TO rls_verifier;
+          GRANT USAGE ON SCHEMA public TO rls_verifier;
+          GRANT SELECT ON ALL TABLES IN SCHEMA public TO rls_verifier;
+          SQL
+      - name: Verify tenant isolation
+        env:
+          TEST_DATABASE_URL: postgresql://rls_verifier:rls_verifier@localhost:5432/agent_runtime
+          RLS_ADMIN_DATABASE_URL: postgresql://agent:agent@localhost:5432/agent_runtime
+        run: pytest tests/test_rls_runtime.py -v
+
+  secrets-providers:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        provider: [aws, vault]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install '.[test,secrets]'
+      - name: Test ${{ matrix.provider }} Secret Provider
+        run: |
+          if [ "${{ matrix.provider }}" = "aws" ]; then
+            pytest tests/test_secrets.py::TestAWSSecretsManager -v
+          else
+            pytest tests/test_secrets.py::TestVaultSecretManager -v
+          fi
+
+  main-pipeline:
+    needs: [quality, secrets-providers]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install '.[test,lint]'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-evidence
+          path: |
+            htmlcov/
+            test-results/junit.xml
+      - run: python scripts/contract_check.py
+      - run: python scripts/generate_contract_types.py --check
+      - run: python scripts/check_docs.py
+      - run: python scripts/release_check.py
+      - run: python scripts/deployment_check.py
+      - uses: actions/setup-node@v4
+        with: {node-version: '20'}
+      - run: npm ci
+      - run: npm ci --prefix web
+      - run: npx playwright install --with-deps chromium
+      - name: Run browser tests
+        env:
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_TENANT_SLUG: ${{ secrets.E2E_TENANT_SLUG }}
+        run: |
+          test -n "$E2E_ADMIN_EMAIL" || { echo "Missing E2E_ADMIN_EMAIL repository secret"; exit 1; }
+          test -n "$E2E_ADMIN_PASSWORD" || { echo "Missing E2E_ADMIN_PASSWORD repository secret"; exit 1; }
+          test -n "$E2E_TENANT_SLUG" || { echo "Missing E2E_TENANT_SLUG repository secret"; exit 1; }
+          npm run test:e2e
+      - run: python -c "import yaml,json; yaml.safe_load(open('project/docs/openapi/openapi.yaml')); json.load(open('project/docs/schemas/runtime-contract.schema.json'))"
+      - run: SECRET_KEY=ci-secret-key-with-at-least-32-characters DATABASE_URL=sqlite:///./data/ci.db alembic upgrade head
+      - run: SECRET_KEY=ci-secret-key-with-at-least-32-characters DATABASE_URL=sqlite:///./data/ci.db alembic downgrade base
+      - run: SECRET_KEY=ci-secret-key-with-at-least-32-characters DATABASE_URL=sqlite:///./data/ci.db alembic upgrade head
+      - run: npm run build --prefix web
+      - name: Generate Python SBOM
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py requirements -o sbom-python.json --format json
+      - name: Generate Node.js SBOM
+        run: |
+          cd web
+          npx @cyclonedx/cyclonedx-npm --output-file ../sbom-nodejs.json --output-format JSON
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: |
+            sbom-python.json
+            sbom-nodejs.json

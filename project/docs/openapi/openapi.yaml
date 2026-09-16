@@ -1,0 +1,703 @@
+openapi: 3.1.0
+info:
+  title: Auditable Agent Runtime API
+  version: 1.0.0
+  description: Minimum MVP contract for a multi-tenant auditable Agent Runtime.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      security: []
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: Authenticated, content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/refresh:
+    post:
+      security: []
+      operationId: refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshRequest' }
+      responses:
+        '200': { description: Tokens refreshed, content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/logout:
+    post:
+      operationId: logout
+      responses:
+        '204': { description: Session revoked }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /agents:
+    get:
+      operationId: listAgents
+      parameters: [{ $ref: '#/components/parameters/Cursor' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200': { description: Agent page, content: { application/json: { schema: { $ref: '#/components/schemas/AgentPage' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      operationId: createAgent
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AgentCreate' }
+      responses:
+        '201': { description: Agent created, content: { application/json: { schema: { $ref: '#/components/schemas/AgentEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /agents/{agent_id}/publish:
+    post:
+      operationId: publishAgent
+      parameters:
+        - { $ref: '#/components/parameters/AgentId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { $ref: '#/components/parameters/IfMatch' }
+      responses:
+        '201': { description: Immutable version published, content: { application/json: { schema: { $ref: '#/components/schemas/AgentVersionEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /runs:
+    get:
+      summary: List runs
+      description: Lists tenant-scoped runs with pagination and filters.
+      operationId: listRuns
+      responses:
+        '200': { description: Runs returned }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { description: Internal error }
+    post:
+      operationId: createRun
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RunCreate' }
+      responses:
+        '202': { description: Run accepted, content: { application/json: { schema: { $ref: '#/components/schemas/RunEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /runs/{run_id}:
+    get:
+      operationId: getRun
+      parameters: [{ $ref: '#/components/parameters/RunId' }]
+      responses:
+        '200': { description: Run state, content: { application/json: { schema: { $ref: '#/components/schemas/RunEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /conversations:
+    get:
+      summary: List conversations
+      description: Lists tenant-scoped Run conversations.
+      operationId: listConversations
+      responses: { '200': { description: Conversations returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /conversations/{run_id}:
+    get:
+      summary: Get conversation
+      description: Returns one Run conversation detail.
+      operationId: getConversation
+      parameters: [{ $ref: '#/components/parameters/RunId' }]
+      responses: { '200': { description: Conversation returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /runs/{run_id}/cancel:
+    post:
+      operationId: cancelRun
+      parameters: [{ $ref: '#/components/parameters/RunId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      responses:
+        '202': { description: Cancellation accepted, content: { application/json: { schema: { $ref: '#/components/schemas/RunEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /runs/{run_id}/execute:
+    post:
+      operationId: executeRun
+      parameters: [{ $ref: '#/components/parameters/RunId' }]
+      responses:
+        '202': { description: Run execution accepted, content: { application/json: { schema: { $ref: '#/components/schemas/RunEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /runs/{run_id}/execute-stream:
+    post:
+      summary: Execute run with streaming
+      description: Executes a run and streams results via SSE.
+      operationId: executeRunStream
+      parameters: [{ $ref: '#/components/parameters/RunId' }]
+      responses:
+        '200': { description: SSE event stream }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /runs/{run_id}/stop:
+    post:
+      summary: Stop run
+      description: Stops a running execution.
+      operationId: stopRun
+      parameters: [{ $ref: '#/components/parameters/RunId' }]
+      responses:
+        '200': { description: Stop accepted, content: { application/json: { schema: { $ref: '#/components/schemas/RunEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /runs/{run_id}/restore:
+    post:
+      operationId: restoreRun
+      parameters: [{ $ref: '#/components/parameters/RunId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [checkpointVersion], properties: { checkpointVersion: { type: integer, minimum: 1 } } }
+      responses:
+        '200': { description: Run restored, content: { application/json: { schema: { $ref: '#/components/schemas/RunEnvelope' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /runs/{run_id}/tool-calls:
+    post:
+      operationId: createToolCall
+      parameters: [{ $ref: '#/components/parameters/RunId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ToolCallCreate' }
+      responses:
+        '202': { description: Tool call created, content: { application/json: { schema: { $ref: '#/components/schemas/ToolCallEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /tools:
+    get:
+      operationId: listTools
+      responses:
+        '200': { description: Active tenant tools, content: { application/json: { schema: { $ref: '#/components/schemas/ToolPage' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      operationId: createTool
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ToolCreate' }
+      responses:
+        '201': { description: Tool registered, content: { application/json: { schema: { $ref: '#/components/schemas/ToolEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /approvals:
+    get:
+      operationId: listApprovals
+      parameters: [{ $ref: '#/components/parameters/Cursor' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200': { description: Approval page, content: { application/json: { schema: { $ref: '#/components/schemas/ApprovalPage' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /approvals/{approvalId}/decision:
+    post:
+      operationId: decideApproval
+      parameters:
+        - name: approvalId
+          in: path
+          required: true
+          schema: { type: string, minLength: 10, maxLength: 100 }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApprovalDecision' }
+      responses:
+        '200': { description: Decision recorded, content: { application/json: { schema: { $ref: '#/components/schemas/ApprovalEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /audit:
+    get:
+      operationId: listAuditEvents
+      parameters:
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - { name: resourceType, in: query, schema: { type: string } }
+        - { name: resourceId, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Tenant-scoped audit page, content: { application/json: { schema: { $ref: '#/components/schemas/AuditPage' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /health:
+    get:
+      security: []
+      operationId: health
+      responses:
+        '200': { description: Process is alive, content: { application/json: { schema: { $ref: '#/components/schemas/Health' } } } }
+  /ready:
+    get:
+      security: []
+      operationId: ready
+      responses:
+        '200': { description: Dependencies ready }
+        '503': { description: Dependencies unavailable }
+  /admin/settings:
+    get:
+      summary: Get admin settings
+      description: Returns global system settings (admin only).
+      operationId: getAdminSettings
+      responses:
+        '200': { description: Settings returned }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    put:
+      summary: Update admin settings
+      description: Updates global system settings (admin only).
+      operationId: updateAdminSettings
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object } } }
+      responses:
+        '200': { description: Settings updated }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /agents/{agent_id}:
+    get: { summary: Get agent, description: Returns one tenant-scoped agent., operationId: getAgent, parameters: [{ $ref: '#/components/parameters/AgentId' }], responses: { '200': { description: Agent returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+    patch: { summary: Update agent, description: Updates an agent draft., operationId: updateAgent, parameters: [{ $ref: '#/components/parameters/AgentId' }], requestBody: { required: true, content: { application/json: { schema: { type: object } } } }, responses: { '200': { description: Agent updated }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+    delete: { summary: Delete agent, description: Soft deletes an agent., operationId: deleteAgent, parameters: [{ $ref: '#/components/parameters/AgentId' }], responses: { '204': { description: Agent deleted }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /agents/{agent_id}/versions:
+    get: { summary: List agent versions, description: Lists immutable published versions., operationId: listAgentVersions, parameters: [{ $ref: '#/components/parameters/AgentId' }], responses: { '200': { description: Versions returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /agents/{agent_id}/rollback:
+    post: { summary: Roll back agent, description: Publishes a rollback as a new immutable version., operationId: rollbackAgent, parameters: [{ $ref: '#/components/parameters/AgentId' }], requestBody: { required: true, content: { application/json: { schema: { type: object } } } }, responses: { '201': { description: Rollback published }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /runs/{run_id}/events:
+    get: { summary: Stream run events, description: Streams resumable SSE runtime events., operationId: streamRunEvents, parameters: [{ $ref: '#/components/parameters/RunId' }], responses: { '200': { description: SSE event stream }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /runs/{run_id}/replay:
+    post: { summary: Replay failed run, description: Creates a replay from a failed run., operationId: replayRun, parameters: [{ $ref: '#/components/parameters/RunId' }], responses: { '202': { description: Replay accepted }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /skills:
+    get: { summary: List skills, description: Lists tenant-visible skills., operationId: listSkills, responses: { '200': { description: Skills returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '500': { description: Internal error } } }
+    post: { summary: Create skill, description: Creates a skill draft., operationId: createSkill, requestBody: { required: true, content: { application/json: { schema: { type: object } } } }, responses: { '201': { description: Skill created }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '500': { description: Internal error } } }
+  /skills/{skill_id}:
+    get: { summary: Get skill, description: Returns one tenant-visible skill., operationId: getSkill, parameters: [{ $ref: '#/components/parameters/SkillId' }], responses: { '200': { description: Skill returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /skills/{skill_id}/submit:
+    post: { summary: Submit skill, description: Submits a skill for review., operationId: submitSkill, parameters: [{ $ref: '#/components/parameters/SkillId' }], responses: { '202': { description: Skill submitted }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /skills/{skill_id}/review:
+    post: { summary: Review skill, description: Approves or rejects a submitted skill., operationId: reviewSkill, parameters: [{ $ref: '#/components/parameters/SkillId' }], requestBody: { required: true, content: { application/json: { schema: { type: object } } } }, responses: { '200': { description: Review recorded }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /dlq:
+    get: { summary: List dead letters, description: Lists failed runtime messages., operationId: listDlq, responses: { '200': { description: Dead letters returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '500': { description: Internal error } } }
+  /dlq/{message_id}/replay:
+    post: { summary: Replay dead letter, description: Requeues one failed message., operationId: replayDlqMessage, parameters: [{ $ref: '#/components/parameters/MessageId' }], responses: { '202': { description: Replay accepted }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /audit/export:
+    get: { summary: Export audit events, description: Downloads tenant audit events as CSV., operationId: exportAudit, responses: { '200': { description: CSV audit export }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '500': { description: Internal error } } }
+  /costs/summary:
+    get: { summary: Get cost summary, description: Returns tenant cost aggregates., operationId: getCostSummary, responses: { '200': { description: Cost summary returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '500': { description: Internal error } } }
+  /tenant/usage:
+    get: { summary: Get tenant usage, description: Returns monthly tokens, cost and soft-limit state., operationId: getTenantUsage, responses: { '200': { description: Usage returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '500': { description: Internal error } } }
+  /tenants/{tenant_id}/quota:
+    get: { summary: Get tenant quota, description: Returns quota configuration and usage., operationId: getTenantQuota, parameters: [{ $ref: '#/components/parameters/TenantId' }], responses: { '200': { description: Quota returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+    put: { summary: Update tenant quota, description: Replaces tenant quota limits., operationId: updateTenantQuota, parameters: [{ $ref: '#/components/parameters/TenantId' }], requestBody: { required: true, content: { application/json: { schema: { type: object } } } }, responses: { '200': { description: Quota updated }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /settings/profile:
+    get: { summary: Get profile, description: Returns the authenticated user's profile and preferences., operationId: getProfile, responses: { '200': { description: Profile returned }, '401': { $ref: '#/components/responses/Unauthorized' } } }
+    put: { summary: Update profile, description: Updates the authenticated user's profile and preferences., operationId: updateProfile, requestBody: { required: true, content: { application/json: { schema: { type: object } } } }, responses: { '200': { description: Profile updated }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' } } }
+  /settings/password:
+    put: { summary: Change password, description: Changes the authenticated user's password., operationId: updatePassword, requestBody: { required: true, content: { application/json: { schema: { type: object } } } }, responses: { '200': { description: Password updated }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' } } }
+  /settings/tenant:
+    get: { summary: Get settings quota, description: Returns tenant settings for administrators., operationId: getSettingsTenant, responses: { '200': { description: Tenant settings returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' } } }
+    put: { summary: Update settings quota, description: Updates tenant settings for administrators., operationId: updateSettingsTenant, requestBody: { required: true, content: { application/json: { schema: { type: object } } } }, responses: { '200': { description: Tenant settings updated }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' } } }
+  /agents/{agent_id}/memories:
+    post: { summary: Create agent memory, description: Stores tenant-scoped agent memory., operationId: createAgentMemory, parameters: [{ $ref: '#/components/parameters/AgentId' }], requestBody: { required: true, content: { application/json: { schema: { type: object } } } }, responses: { '201': { description: Memory stored }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /agents/{agent_id}/memories/search:
+    get: { summary: Search agent memory, description: Searches tenant-scoped agent memory., operationId: searchAgentMemory, parameters: [{ $ref: '#/components/parameters/AgentId' }], responses: { '200': { description: Memories returned }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '500': { description: Internal error } } }
+  /knowledge-bases:
+    get:
+      operationId: listKnowledgeBases
+      responses:
+        '200': { description: Tenant-scoped knowledge bases, content: { application/json: { schema: { $ref: '#/components/schemas/KnowledgeBasePage' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: createKnowledgeBase
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/KnowledgeBaseCreate' } } }
+      responses:
+        '201': { description: Knowledge base created, content: { application/json: { schema: { $ref: '#/components/schemas/KnowledgeBaseEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /knowledge-bases/{knowledge_base_id}:
+    get:
+      summary: Get knowledge base
+      description: Returns one tenant-scoped knowledge base.
+      operationId: getKnowledgeBase
+      parameters: [{ name: knowledge_base_id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Knowledge base returned, content: { application/json: { schema: { $ref: '#/components/schemas/KnowledgeBaseEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      summary: Delete knowledge base
+      description: Deletes a knowledge base and all its documents.
+      operationId: deleteKnowledgeBase
+      parameters: [{ name: knowledge_base_id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '204': { description: Knowledge base deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /knowledge-bases/{knowledge_base_id}/documents/{document_id}:
+    delete:
+      summary: Delete knowledge document
+      description: Deletes a document from a knowledge base.
+      operationId: deleteKnowledgeDocument
+      parameters:
+        - { name: knowledge_base_id, in: path, required: true, schema: { type: string } }
+        - { name: document_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Document deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /knowledge-bases/{knowledge_base_id}/query:
+    post:
+      summary: Query knowledge base
+      description: RAG query against a knowledge base.
+      operationId: queryKnowledgeBase
+      parameters: [{ name: knowledge_base_id, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [query], properties: { query: { type: string, minLength: 1, maxLength: 2000 }, topK: { type: integer, minimum: 1, maximum: 20, default: 5 } } } } }
+      responses:
+        '200': { description: Query results returned }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /knowledge-bases/{knowledge_base_id}/documents/upload:
+    post:
+      operationId: uploadKnowledgeDocument
+      parameters: [{ name: knowledge_base_id, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { type: object, required: [file], properties: { file: { type: string, format: binary, description: UTF-8 text, Markdown, or JSON document (max 2 MiB) } } }
+      responses:
+        '201': { description: Document indexed }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /knowledge-bases/{knowledge_base_id}/search:
+    get:
+      operationId: searchKnowledge
+      parameters: [{ name: knowledge_base_id, in: path, required: true, schema: { type: string } }, { name: q, in: query, required: true, schema: { type: string, minLength: 1, maxLength: 2000 } }]
+      responses:
+        '200': { description: Ranked tenant-scoped chunks }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /knowledge-bases/{knowledge_base_id}/documents:
+    post:
+      operationId: ingestKnowledgeDocument
+      parameters: [{ name: knowledge_base_id, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/KnowledgeDocumentCreate' } } }
+      responses:
+        '201': { description: Document indexed }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /workflow-instances:
+    get:
+      operationId: listWorkflowInstances
+      responses: { '200': { description: Tenant workflow instances }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' } }
+    post:
+      operationId: createWorkflowInstance
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/WorkflowInstanceCreate' } } }
+      responses: { '202': { description: Workflow instance accepted }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /workflow-instances/{instance_id}:
+    get:
+      operationId: getWorkflowInstance
+      parameters: [{ name: instance_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Workflow instance returned }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /workflow-instances/{instance_id}/cancel:
+    post:
+      operationId: cancelWorkflowInstance
+      parameters: [{ name: instance_id, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { description: Workflow instance cancelled }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /workflows:
+    get:
+      operationId: listWorkflows
+      responses:
+        '200': { description: Tenant workflow definitions }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /workflows/{workflow_id}:
+    get:
+      operationId: getWorkflow
+      parameters: [{ name: workflow_id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Workflow definition and recent instances }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      operationId: updateWorkflow
+      parameters: [{ name: workflow_id, in: path, required: true, schema: { type: string } }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [nodes, edges], properties: { nodes: { type: array, maxItems: 100, items: { type: object } }, edges: { type: array, maxItems: 200, items: { type: object } } } } } } }
+      responses:
+        '200': { description: Workflow draft saved }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /workflows/{workflow_id}/duplicate:
+    post:
+      summary: Duplicate workflow
+      description: Creates a copy of an existing workflow.
+      operationId: duplicateWorkflow
+      parameters: [{ name: workflow_id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '201': { description: Workflow duplicated }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: opaque }
+  parameters:
+    AgentId: { name: agent_id, in: path, required: true, schema: { type: string, minLength: 10, maxLength: 100 } }
+    RunId: { name: run_id, in: path, required: true, schema: { type: string, minLength: 10, maxLength: 100 } }
+    Cursor: { name: cursor, in: query, schema: { type: string, maxLength: 512 } }
+    PageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 16, maxLength: 100 } }
+    IfMatch: { name: If-Match, in: header, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+    SkillId: { name: skill_id, in: path, required: true, schema: { type: string } }
+    MessageId: { name: message_id, in: path, required: true, schema: { type: string } }
+    TenantId: { name: tenant_id, in: path, required: true, schema: { type: string } }
+  responses:
+    Unauthorized: { description: Authentication required, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+    Forbidden: { description: Action is not allowed, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+    NotFound: { description: Resource not found, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+    ValidationError: { description: Invalid request, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+    Conflict: { description: Conflict or idempotency mismatch, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      additionalProperties: false
+      properties:
+        email: { type: string, format: email, maxLength: 320 }
+        password: { type: string, minLength: 12, maxLength: 128, writeOnly: true }
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      additionalProperties: false
+      properties:
+        refreshToken: { type: string, minLength: 32, maxLength: 256, writeOnly: true }
+    AuthResponse:
+      type: object
+      required: [data, requestId]
+      properties:
+        data: { type: object, required: [accessToken, expiresAt], properties: { accessToken: { type: string, writeOnly: true }, expiresAt: { type: string, format: date-time } } }
+        requestId: { type: string }
+    AgentCreate:
+      type: object
+      required: [name, definition]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        definition: { type: object, additionalProperties: true, maxProperties: 50 }
+    KnowledgeBaseCreate:
+      type: object
+      required: [slug, name]
+      additionalProperties: false
+      properties:
+        slug: { type: string, pattern: '^[a-z0-9][a-z0-9_-]*$', minLength: 1, maxLength: 100 }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, maxLength: 1000 }
+    KnowledgeBase:
+      type: object
+      required: [id, tenantId, slug, name, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        slug: { type: string }
+        name: { type: string }
+        description: { type: string }
+        createdAt: { type: string, format: date-time }
+    KnowledgeBaseEnvelope: { type: object, required: [data, requestId], properties: { data: { $ref: '#/components/schemas/KnowledgeBase' }, requestId: { type: string } } }
+    KnowledgeBasePage: { type: object, required: [data, requestId], properties: { data: { type: array, items: { $ref: '#/components/schemas/KnowledgeBase' } }, requestId: { type: string } } }
+    KnowledgeDocumentCreate:
+      type: object
+      required: [filename, content]
+      additionalProperties: false
+      properties:
+        filename: { type: string, minLength: 1, maxLength: 255 }
+        content: { type: string, minLength: 1, maxLength: 200000 }
+        contentType: { type: string, maxLength: 100, default: text/plain }
+    WorkflowInstanceCreate:
+      type: object
+      required: [workflowId, input]
+      additionalProperties: false
+      properties:
+        workflowId: { type: string }
+        input: { type: object, additionalProperties: true }
+    Agent:
+      type: object
+      required: [id, tenantId, name, status, version, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        name: { type: string }
+        status: { type: string, enum: [draft, published, archived] }
+        version: { type: integer, minimum: 1 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AgentVersion:
+      type: object
+      required: [id, agentId, version, contentDigest, publishedAt]
+      properties:
+        id: { type: string }
+        agentId: { type: string }
+        version: { type: integer, minimum: 1 }
+        contentDigest: { type: string, pattern: '^sha256:[a-f0-9]{64}$' }
+        publishedAt: { type: string, format: date-time }
+    RunCreate:
+      type: object
+      required: [agentId, input]
+      additionalProperties: false
+      properties:
+        agentId: { type: string }
+        input: { type: object, additionalProperties: true, maxProperties: 100 }
+        workflowId: { type: string }
+    Run:
+      type: object
+      required: [id, tenantId, agentId, status, attemptId, checkpointVersion, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        agentId: { type: string }
+        status: { type: string, enum: [accepted, preparing, running, waiting_approval, completed, failed, cancelled, timed_out, budget_exceeded] }
+        attemptId: { type: string }
+        checkpointVersion: { type: integer, minimum: 0 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        finishedAt: { type: string, format: date-time, nullable: true }
+        output: { type: object, nullable: true, additionalProperties: true }
+    ToolCreate:
+      type: object
+      required: [name, executor]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        description: { type: string, maxLength: 500 }
+        executor: { type: string, enum: [builtin.echo, builtin.add] }
+        inputSchema: { type: object, additionalProperties: true }
+        outputSchema: { type: object, additionalProperties: true }
+        sideEffects: { type: boolean, default: false }
+        riskLevel: { type: string, enum: [low, medium, high, critical] }
+        timeoutMs: { type: integer, minimum: 100, maximum: 120000 }
+    Tool:
+      type: object
+      required: [id, tenantId, name, version, executor, status]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        name: { type: string }
+        version: { type: integer, minimum: 1 }
+        executor: { type: string }
+        status: { type: string, enum: [active, revoked] }
+    ToolCallCreate:
+      type: object
+      required: [toolName, input]
+      additionalProperties: false
+      properties:
+        toolName: { type: string }
+        input: { type: object, additionalProperties: true }
+        idempotencyKey: { type: string, minLength: 16, maxLength: 200 }
+    ToolCall:
+      type: object
+      required: [id, runId, toolDefinitionId, status, idempotencyKey]
+      properties:
+        id: { type: string }
+        runId: { type: string }
+        toolDefinitionId: { type: string }
+        status: { type: string, enum: [created, validating, pending_approval, executing, rejected, expired, succeeded, failed, timed_out, retry_scheduled, permanently_failed] }
+        idempotencyKey: { type: string }
+        output: { type: object, nullable: true, additionalProperties: true }
+    Approval:
+      type: object
+      required: [id, runId, toolCallId, status, expiresAt]
+      properties:
+        id: { type: string }
+        runId: { type: string }
+        toolCallId: { type: string }
+        status: { type: string, enum: [pending, approved, rejected, expired] }
+        expiresAt: { type: string, format: date-time }
+    ApprovalDecision:
+      type: object
+      required: [decision, token]
+      additionalProperties: false
+      properties:
+        decision: { type: string, enum: [approve, reject] }
+        reason: { type: string, maxLength: 1000 }
+        token: { type: string, minLength: 32, maxLength: 128, writeOnly: true }
+    AuditEvent:
+      type: object
+      required: [eventId, schemaVersion, tenantId, occurredAt, action, resourceType, result, requestId]
+      properties:
+        eventId: { type: string }
+        schemaVersion: { type: integer, minimum: 1 }
+        tenantId: { type: string }
+        occurredAt: { type: string, format: date-time }
+        principalId: { type: string, nullable: true }
+        action: { type: string }
+        resourceType: { type: string }
+        resourceId: { type: string, nullable: true }
+        result: { type: string, enum: [success, denied, failure] }
+        requestId: { type: string }
+        metadataRedacted: { type: object, additionalProperties: true, maxProperties: 30 }
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code: { type: string, enum: [UNAUTHORIZED, FORBIDDEN, NOT_FOUND, VALIDATION_ERROR, CONFLICT, VERSION_CONFLICT, RATE_LIMIT_EXCEEDED, QUOTA_EXCEEDED, BUDGET_EXCEEDED, INVALID_STATE_TRANSITION, APPROVAL_ALREADY_HANDLED, RESUME_WINDOW_EXPIRED, MODEL_PROVIDER_ERROR, TOOL_EXECUTION_FAILED, SANDBOX_TIMEOUT, INTERNAL_ERROR] }
+            message: { type: string, maxLength: 500 }
+            requestId: { type: string }
+            details: { type: object, additionalProperties: true }
+    AgentEnvelope: { type: object, required: [data, requestId], properties: { data: { $ref: '#/components/schemas/Agent' }, requestId: { type: string } } }
+    AgentVersionEnvelope: { type: object, required: [data, requestId], properties: { data: { $ref: '#/components/schemas/AgentVersion' }, requestId: { type: string } } }
+    ToolEnvelope: { type: object, required: [data, requestId], properties: { data: { $ref: '#/components/schemas/Tool' }, requestId: { type: string } } }
+    ToolPage: { type: object, required: [data, requestId], properties: { data: { type: array, items: { $ref: '#/components/schemas/Tool' } }, requestId: { type: string }, meta: { type: object } } }
+    ToolCallEnvelope: { type: object, required: [data, requestId], properties: { data: { $ref: '#/components/schemas/ToolCall' }, requestId: { type: string } } }
+    RunEnvelope: { type: object, required: [data, requestId], properties: { data: { $ref: '#/components/schemas/Run' }, requestId: { type: string } } }
+    ApprovalEnvelope: { type: object, required: [data, requestId], properties: { data: { $ref: '#/components/schemas/Approval' }, requestId: { type: string } } }
+    AgentPage: { type: object, required: [data, requestId, meta], properties: { data: { type: array, items: { $ref: '#/components/schemas/Agent' } }, requestId: { type: string }, meta: { $ref: '#/components/schemas/PageMeta' } } }
+    ApprovalPage: { type: object, required: [data, requestId, meta], properties: { data: { type: array, items: { $ref: '#/components/schemas/Approval' } }, requestId: { type: string }, meta: { $ref: '#/components/schemas/PageMeta' } } }
+    AuditPage: { type: object, required: [data, requestId, meta], properties: { data: { type: array, items: { $ref: '#/components/schemas/AuditEvent' } }, requestId: { type: string }, meta: { $ref: '#/components/schemas/PageMeta' } } }
+    PageMeta: { type: object, required: [nextCursor], properties: { nextCursor: { type: string, nullable: true } } }
+    Health: { type: object, required: [status], properties: { status: { type: string, enum: [ok] } } }

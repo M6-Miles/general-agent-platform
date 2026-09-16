@@ -1,0 +1,1 @@
+{"title":"Auditable Agent Runtime","schemaVersion":39,"panels":[{"type":"stat","title":"HTTP requests","targets":[{"expr":"agent_http_requests_total"}]},{"type":"timeseries","title":"Process uptime","targets":[{"expr":"agent_process_uptime_seconds"}]}],"templating":{"list":[]}}

@@ -1,0 +1,238 @@
+/* 仪表盘页面样式 */
+
+/* 仪表盘章节 */
+.dashboard-section {
+  margin-top: var(--spacing-8);
+}
+
+.dashboard-section > .section-heading {
+  margin-bottom: var(--spacing-4);
+}
+
+.dashboard-section h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+/* 活动章节 */
+.activity-section {
+  padding: var(--spacing-5);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* 活动列表 */
+.activity-list {
+  display: grid;
+}
+
+.activity-list article {
+  position: relative;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) 0;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.activity-list article:last-child {
+  border-bottom: none;
+}
+
+.activity-list article > div:last-child {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  text-align: right;
+}
+
+.activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-brand-500);
+}
+
+.activity-list strong {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.activity-list span,
+.activity-list time {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+/* 运行摘要 */
+.run-summary dl {
+  margin: 0;
+  display: grid;
+}
+
+.run-summary dl div {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-3) 0;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.run-summary dl div:last-child {
+  border-bottom: none;
+}
+
+.run-summary dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.run-summary dd {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+/* 仪表盘网格 */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: var(--spacing-4);
+}
+
+/* 控制台面板 */
+.console-panel {
+  display: grid;
+  align-content: start;
+  gap: var(--spacing-3);
+  padding: var(--spacing-5);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  min-height: 220px;
+}
+
+.console-panel h2 {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.console-panel-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+}
+
+.console-panel-title p {
+  margin: var(--spacing-1) 0 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+.console-panel label {
+  display: grid;
+  gap: var(--spacing-2);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.console-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
+.console-output {
+  min-height: 130px;
+  margin: 0;
+  background: var(--color-neutral-900);
+  border: 1px solid var(--color-neutral-800);
+  color: var(--color-neutral-200);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-relaxed);
+  padding: var(--spacing-3);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.console-wide {
+  grid-column: 1 / -1;
+  min-height: 170px;
+}
+
+.console-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-4);
+}
+
+.console-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-5);
+  margin-bottom: var(--spacing-6);
+}
+
+.console-intro h2 {
+  margin: 0 0 var(--spacing-1);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.console-intro p {
+  margin: 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* 响应式 */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .console-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .console-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .activity-section {
+    padding: var(--spacing-4);
+  }
+
+  .activity-list article {
+    grid-template-columns: 10px minmax(0, 1fr);
+  }
+
+  .activity-list article > div:last-child {
+    grid-column: 2;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .console-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .console-intro {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+}

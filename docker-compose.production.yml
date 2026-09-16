@@ -1,0 +1,51 @@
+services:
+  migrate:
+    environment:
+      DATABASE_URL: ${MIGRATION_DATABASE_URL:?MIGRATION_DATABASE_URL is required}
+  seed:
+    command: ["python", "-c", "print('Demo seed disabled in production; create an administrator through the provisioning workflow')"]
+    environment:
+      DATABASE_URL: ${MIGRATION_DATABASE_URL:?MIGRATION_DATABASE_URL is required}
+  provision:
+    environment:
+      DATABASE_URL: ${MIGRATION_DATABASE_URL:?MIGRATION_DATABASE_URL is required}
+      APP_DATABASE_URL: ${APP_DATABASE_URL:?APP_DATABASE_URL is required}
+  api:
+    env_file: .env.production
+    environment:
+      DATABASE_URL: ${APP_DATABASE_URL:?APP_DATABASE_URL is required}
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+    read_only: true
+    tmpfs:
+      - /tmp
+  worker:
+    env_file: .env.production
+    environment:
+      DATABASE_URL: ${APP_DATABASE_URL:?APP_DATABASE_URL is required}
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+    read_only: true
+    tmpfs:
+      - /tmp
+  postgres:
+    env_file: .env.production
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+  redis:
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M

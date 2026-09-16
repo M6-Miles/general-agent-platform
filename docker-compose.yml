@@ -1,0 +1,140 @@
+services:
+  web:
+    profiles: ["frontend"]
+    build:
+      context: ./web
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    command: ["node", "server.js"]
+    restart: unless-stopped
+  migrate:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: ${MIGRATION_DATABASE_URL:-postgresql+psycopg://agent:agent@postgres:5432/agent_runtime}
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+  seed:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: ${MIGRATION_DATABASE_URL:-postgresql+psycopg://agent:agent@postgres:5432/agent_runtime}
+    command: ["python", "scripts/seed.py"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  provision:
+    build: .
+    env_file: .env
+    command: ["python", "scripts/provision_runtime_role.py"]
+    environment:
+      DATABASE_URL: ${MIGRATION_DATABASE_URL:-postgresql+psycopg://agent:agent@postgres:5432/agent_runtime}
+      APP_DATABASE_URL: ${APP_DATABASE_URL:-postgresql+psycopg://agent_runtime:agent_runtime@postgres:5432/agent_runtime}
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+  api:
+    build: .
+    env_file: .env
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${APP_DATABASE_URL:-postgresql+psycopg://agent_runtime:agent_runtime@postgres:5432/agent_runtime}
+      REDIS_URL: redis://redis:6379/0
+      MODEL_PROVIDER: ${MODEL_PROVIDER:-mock}
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:13001,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:13001
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      provision:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+  worker:
+    build: .
+    env_file: .env
+    command: ["python", "-m", "app.worker"]
+    environment:
+      DATABASE_URL: ${APP_DATABASE_URL:-postgresql+psycopg://agent_runtime:agent_runtime@postgres:5432/agent_runtime}
+      REDIS_URL: redis://redis:6379/0
+      WORKER_METRICS_PORT: "8001"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      provision:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    profiles: ["monitoring"]
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus-alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    depends_on:
+      api:
+        condition: service_healthy
+  grafana:
+    image: grafana/grafana:11.1.0
+    profiles: ["monitoring"]
+    ports:
+      - "3002:3000"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-dashboard.json:/var/lib/grafana/dashboards/agent-runtime.json:ro
+      - ./monitoring/grafana-provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      prometheus:
+        condition: service_started
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: agent
+      POSTGRES_PASSWORD: agent
+      POSTGRES_DB: agent_runtime
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agent -d agent_runtime"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:

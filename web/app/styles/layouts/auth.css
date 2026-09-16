@@ -1,0 +1,89 @@
+/* 认证页面布局样式 */
+
+/* 登录页面 */
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.2fr minmax(320px, 420px);
+  gap: 8vw;
+  align-items: center;
+  padding: 6vw;
+  background: linear-gradient(135deg, var(--color-brand-50) 0%, #ffffff 50%, var(--color-brand-50) 100%);
+}
+
+/* 登录文案 */
+.login-copy {
+  max-width: 560px;
+  padding-left: 4vw;
+}
+
+.login-copy h1 {
+  font-size: clamp(36px, 4.5vw, 56px);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  margin: var(--spacing-5) 0 var(--spacing-3);
+}
+
+.login-copy p {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin: 0;
+}
+
+.eyebrow {
+  color: var(--color-brand-600);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-widest);
+  text-transform: uppercase;
+}
+
+/* 登录表单 */
+.login-form {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-8);
+  display: grid;
+  gap: var(--spacing-5);
+  box-shadow: var(--shadow-xl);
+}
+
+.login-form h2 {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.login-form label {
+  display: grid;
+  gap: var(--spacing-2);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+.login-form button {
+  margin-top: var(--spacing-2);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .login-page {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-8);
+    padding: var(--spacing-8) var(--spacing-5);
+  }
+
+  .login-copy {
+    padding-left: 0;
+  }
+
+  .login-copy h1 {
+    font-size: 40px;
+  }
+
+  .login-form {
+    padding: var(--spacing-7);
+  }
+}

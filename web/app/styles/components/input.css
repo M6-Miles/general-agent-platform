@@ -1,0 +1,300 @@
+/* 输入组件样式 */
+
+/* 输入包装器 */
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* 标签 */
+.input-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.label-text {
+  display: block;
+}
+
+/* 输入框 */
+.ui-input, .input-wrapper input {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--spacing-3);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-input);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  transition: var(--transition-colors), var(--transition-shadow);
+}
+
+.ui-input:hover, .input-wrapper input:hover {
+  border-color: var(--color-border-focus);
+}
+
+.input-wrapper input:focus, .ui-input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.input-wrapper input:disabled, .ui-input:disabled, .input-disabled {
+  background: var(--color-bg-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.input-wrapper input::placeholder, .ui-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* 错误状态 */
+.input-error, .ui-input.input-error, .ui-textarea.input-error, .ui-select.input-error {
+  border-color: var(--color-error-500);
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 3px rgb(239 68 68 / 0.15);
+}
+
+.input-error-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-error-600);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+/* 帮助文本 */
+.input-help-text, .help-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: var(--line-height-normal);
+  margin-top: var(--spacing-1);
+}
+
+/* 文本域 */
+.ui-textarea, .input-wrapper textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: var(--spacing-3);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-input);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  resize: vertical;
+  transition: var(--transition-colors), var(--transition-shadow);
+}
+
+.ui-textarea:hover, .input-wrapper textarea:hover {
+  border-color: var(--color-border-focus);
+}
+
+.input-wrapper textarea:focus, .ui-textarea:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.input-wrapper textarea:disabled, .ui-textarea:disabled {
+  background: var(--color-bg-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* 选择框 */
+.ui-select, .input-wrapper select {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--spacing-3);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-input);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: var(--transition-colors), var(--transition-shadow);
+}
+
+.ui-select:hover, .input-wrapper select:hover {
+  border-color: var(--color-border-focus);
+}
+
+.input-wrapper select:focus, .ui-select:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+/* 输入容器（带图标） */
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-icon {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  height: 40px;
+  padding-left: var(--spacing-3);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-input);
+  color: var(--color-text-tertiary);
+  transition: var(--transition-colors), var(--transition-shadow);
+}
+
+.input-with-icon:focus-within {
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.input-with-icon input {
+  height: 38px;
+  padding-left: 0;
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+/* 搜索控件 */
+.search-control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  height: 40px;
+  padding: 0 var(--spacing-3);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  color: var(--color-text-tertiary);
+  transition: var(--transition-colors), var(--transition-shadow);
+}
+
+.search-control:focus-within {
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.search-control input {
+  min-width: 0;
+  width: 100%;
+  height: 38px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+/* 选择控件 */
+.select-control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  height: 40px;
+  padding: 0 var(--spacing-3);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  transition: var(--transition-colors), var(--transition-shadow);
+}
+
+.select-control:focus-within {
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-focus);
+}
+
+.select-control select {
+  min-width: 0;
+  width: 100%;
+  height: 38px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+/* 复选框和单选框 */
+.checkbox-row, .radio-row {
+  display: flex !important;
+  align-items: center;
+  gap: var(--spacing-2);
+  grid-template-columns: none !important;
+}
+
+.checkbox-row input, .radio-row input {
+  width: auto;
+  height: auto;
+}
+
+/* 表单网格 */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-4);
+}
+
+.full-field {
+  grid-column: 1 / -1;
+}
+
+/* 表单操作 */
+.form-actions, .form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-3);
+  padding-top: var(--spacing-5);
+  margin-top: var(--spacing-5);
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+/* 表单错误和成功消息 */
+.form-error {
+  color: var(--color-error-600);
+  font-size: var(--font-size-sm);
+}
+
+.form-success {
+  color: var(--color-success-600);
+  font-size: var(--font-size-sm);
+}
+
+.upload-status {
+  color: var(--color-success-600);
+  font-size: var(--font-size-xs);
+}
+
+/* 字段提示 */
+.field-hint {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  margin-top: var(--spacing-1);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-field {
+    grid-column: auto;
+  }
+}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>设置页面优化预览</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, -apple-system, sans-serif; background: #fafafa; padding: 40px 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 40px; color: #262626; }
+    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+    .version { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 20px; }
+    .version h2 { margin: 0 0 20px; font-size: 18px; color: #525252; text-align: center; }
+    .version.before h2 { color: #ef4444; }
+    .version.after h2 { color: #10b981; }
+
+    /* 优化前样式 */
+    .before .tabs button { background: #1769e0; color: #fff; padding: 9px 14px; border: 0; border-radius: 5px; margin-right: 8px; }
+    .before .panel { background: #fff; border: 1px solid #dce2ec; border-radius: 8px; padding: 16px; margin-top: 16px; }
+    .before label { display: block; margin-bottom: 12px; }
+    .before input { width: 100%; border: 1px solid #bbc6d6; border-radius: 5px; padding: 9px; }
+
+    /* 优化后样式 */
+    .after .tabs { display: flex; gap: 8px; border-bottom: 2px solid #e5e5e5; margin-bottom: 24px; }
+    .after .tabs button { min-height: 44px; padding: 9px 18px; background: transparent; color: #525252; border: 0; border-bottom: 2px solid transparent; margin-bottom: -2px; border-radius: 0; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .after .tabs button:hover { background: #f8f8f8; }
+    .after .tabs button.active { color: #0369a1; border-bottom-color: #0ea5e9; font-weight: 600; }
+    .after .notice-success { padding: 12px 16px; background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; border-radius: 7px; font-size: 13px; margin-bottom: 18px; }
+    .after .settings-form { max-width: 900px; margin-top: 16px; }
+    .after .settings-form h2 { margin: 0 0 16px; font-size: 18px; color: #262626; }
+    .after label { display: grid; gap: 7px; margin-bottom: 18px; }
+    .after .label-text { font-size: 13px; font-weight: 600; color: #404040; }
+    .after input { width: 100%; height: 42px; padding: 10px 12px; border: 1px solid #d4d4d4; border-radius: 6px; font-size: 14px; }
+    .after input:disabled { background: #f5f5f5; color: #737373; opacity: 0.7; }
+    .after .help-text { color: #737373; font-size: 11px; margin-top: 2px; }
+    .after .form-actions { display: flex; justify-content: flex-end; padding-top: 20px; border-top: 1px solid #e5e5e5; }
+    .after .btn-primary { height: 40px; padding: 0 20px; background: #0369a1; color: #fff; border: 0; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .after .btn-primary:hover { background: #075985; }
+
+    .highlights { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 24px; }
+    .highlights h2 { margin: 0 0 16px; font-size: 20px; }
+    .highlights ul { margin: 0; padding-left: 24px; }
+    .highlights li { margin-bottom: 10px; line-height: 1.6; }
+    .highlight-good { color: #10b981; font-weight: 600; }
+
+    @media (max-width: 768px) {
+      .comparison { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 设置页面优化对比</h1>
+
+    <div class="comparison">
+      <!-- 优化前 -->
+      <div class="version before">
+        <h2>❌ 优化前</h2>
+        <div class="tabs">
+          <button>个人设置</button>
+          <button>租户配置</button>
+        </div>
+        <div class="panel">
+          <label>
+            邮箱
+            <input value="user@example.com" disabled />
+          </label>
+          <label>
+            显示名称
+            <input value="张三" />
+          </label>
+          <button>保存个人设置</button>
+        </div>
+      </div>
+
+      <!-- 优化后 -->
+      <div class="version after">
+        <h2>✅ 优化后</h2>
+        <div class="tabs">
+          <button class="active">个人设置</button>
+          <button>租户配置</button>
+        </div>
+        <div class="notice-success">✓ 个人设置已保存</div>
+        <div class="settings-form">
+          <h2>个人信息</h2>
+          <label>
+            <span class="label-text">邮箱</span>
+            <input type="email" value="user@example.com" disabled />
+            <small class="help-text">邮箱地址不可修改</small>
+          </label>
+          <label>
+            <span class="label-text">显示名称</span>
+            <input type="text" value="张三" placeholder="输入您的显示名称" />
+          </label>
+          <label>
+            <span class="label-text">角色</span>
+            <input type="text" value="tenant_admin" disabled />
+          </label>
+          <div class="form-actions">
+            <button class="btn-primary">保存个人设置</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlights">
+      <h2>✨ 主要改进点</h2>
+      <ul>
+        <li><span class="highlight-good">标签页样式</span> - 活动标签有蓝色下划线和粗体，视觉反馈清晰</li>
+        <li><span class="highlight-good">成功通知</span> - 绿色背景的通知消息，操作反馈明显</li>
+        <li><span class="highlight-good">表单分组</span> - 添加了"个人信息"标题，结构更清晰</li>
+        <li><span class="highlight-good">字段说明</span> - 每个输入框下方都有辅助文字说明用途</li>
+        <li><span class="highlight-good">禁用样式</span> - 灰色背景清楚表明字段不可编辑</li>
+        <li><span class="highlight-good">按钮样式</span> - 统一的主按钮样式，更突出</li>
+        <li><span class="highlight-good">间距优化</span> - 更合理的留白和间距，视觉更舒适</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

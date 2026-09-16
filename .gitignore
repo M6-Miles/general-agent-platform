@@ -1,0 +1,97 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+/lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.json
+*.cover
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+.venv-task*/
+.pip-tmp/
+
+# Local environments and generated runtime data
+/node_modules/
+web/.next-*/
+data/
+*.dump
+*.rdb
+*.db.backup.*
+/models/embedding/*
+!/models/embedding/README.md
+
+# Next.js
+web/.next/
+web/.next-*/
+web/out/
+web/build/
+web/AGENTS.md
+web/node_modules/
+web/playwright-report/
+web/test-results/
+
+# 日志和临时文件
+*.log
+*.tmp
+test_*_output.txt
+test_results.txt
+/test-results/
+*.tsbuildinfo
+# 本地审核过程记录（正式状态以 docs/delivery/current-release-status.md 为准）
+/AUDIT_BRIEF_*.md
+/AUDIT_REPORT_*.md
+/AUDIT_ROUND_*.md
+/AUDIT_SUMMARY_*.txt
+/COMPREHENSIVE_FIX_SUMMARY.md
+/claude-word.md
+
+# 归档目录
+.archive/
+
+# 数据库
+*.db
+*.sqlite
+*.sqlite3
+
+# Alembic
+alembic.ini.local
+
+# SBOM (Software Bill of Materials)
+sbom/
+sbom-*.json

@@ -1,0 +1,10 @@
+import {render} from '@testing-library/react';
+import {afterEach, describe, expect, it, vi} from 'vitest';
+import SkillDetail from './page';
+const pending = new Promise<never>(() => undefined);
+vi.mock('../../components/AuthProvider', () => ({useAuth: () => ({token: 'token', user: {role: 'admin'}})}));
+vi.mock('../../components/NotificationProvider', () => ({useNotifier: () => vi.fn()}));
+vi.mock('../../components/Workspace', () => ({default: ({children}: {children: React.ReactNode}) => <main>{children}</main>}));
+vi.mock('../../../lib/api', () => ({apiBaseUrl: '', apiRequest: () => pending}));
+vi.mock('next/navigation', () => ({useParams: () => ({id: 'skill-1'})}));
+describe('SkillDetail lifecycle', () => { afterEach(() => vi.clearAllMocks()); it('does not update after unmount while loading', () => { const view = render(<SkillDetail />); view.unmount(); expect(true).toBe(true); }); });

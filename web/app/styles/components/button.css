@@ -1,0 +1,200 @@
+/* 按钮组件样式 */
+
+/* 基础按钮 */
+button, .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-button);
+  transition: var(--transition-colors), var(--transition-shadow);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  background: transparent;
+  color: inherit;
+  border: 1px solid transparent;
+}
+
+button:disabled, .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 按钮尺寸 */
+.btn-sm {
+  height: 32px;
+  padding: 0 var(--spacing-3);
+  font-size: var(--font-size-xs);
+}
+
+.btn-md {
+  height: 40px;
+  padding: 0 var(--spacing-4);
+  font-size: var(--font-size-sm);
+}
+
+.btn-lg {
+  height: 48px;
+  padding: 0 var(--spacing-6);
+  font-size: var(--font-size-base);
+}
+
+/* 按钮变体 */
+.btn-primary, .primary-link, .primary-button {
+  background: linear-gradient(135deg, var(--color-brand-600) 0%, var(--color-brand-500) 100%);
+  color: var(--color-text-inverse);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm), 0 0 0 0 rgb(59 130 246 / 0);
+}
+
+.btn-primary:hover:not(:disabled), .primary-link:hover, .primary-button:hover {
+  background: linear-gradient(135deg, var(--color-brand-700) 0%, var(--color-brand-600) 100%);
+  box-shadow: var(--shadow-md), 0 0 0 3px rgb(59 130 246 / 0.1);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary, .secondary-button {
+  background: var(--color-interactive-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-secondary:hover:not(:disabled), .secondary-button:hover:not(:disabled) {
+  background: var(--color-interactive-secondary-hover);
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-ghost, .quiet-button {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid transparent;
+}
+
+.btn-ghost:hover:not(:disabled), .quiet-button:hover:not(:disabled) {
+  background: var(--color-neutral-100);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-secondary);
+}
+
+.btn-danger, .danger-button {
+  background: var(--color-error-600);
+  color: var(--color-text-inverse);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-danger:hover:not(:disabled), .danger-button:hover:not(:disabled) {
+  background: var(--color-error-700);
+  box-shadow: var(--shadow-md);
+}
+
+/* 图标按钮 */
+.icon-button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  transition: var(--transition-colors);
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--color-neutral-100);
+  border-color: var(--color-border-secondary);
+  color: var(--color-text-primary);
+}
+
+/* 按钮加载状态 */
+.btn-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.btn-spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation: spin var(--duration-slow) linear infinite;
+  color: currentColor;
+}
+
+/* 链接按钮 */
+.button-link, .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  color: var(--color-brand-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-md);
+  transition: var(--transition-colors);
+}
+
+.button-link:hover, .text-link:hover {
+  background: var(--color-brand-50);
+  color: var(--color-brand-700);
+}
+
+.primary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  height: 40px;
+  padding: 0 var(--spacing-4);
+  border-radius: var(--radius-button);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+
+/* 上传按钮 */
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  height: 40px;
+  padding: 0 var(--spacing-4);
+  background: var(--color-interactive-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-button);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.upload-button:hover {
+  background: var(--color-interactive-secondary-hover);
+  border-color: var(--color-brand-500);
+}
+
+.upload-button input {
+  display: none;
+}
+
+/* 图标文本按钮 */
+.icon-text-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  white-space: nowrap;
+}

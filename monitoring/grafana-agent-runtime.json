@@ -1,0 +1,12 @@
+{
+  "title": "Agent Runtime Overview",
+  "uid": "agent-runtime",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "panels": [
+    {"id": 1, "type": "stat", "title": "HTTP Requests", "targets": [{"expr": "sum(agent_http_requests_total)"}], "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0}},
+    {"id": 2, "type": "stat", "title": "Worker Completed", "targets": [{"expr": "sum(agent_worker_runs_completed)"}], "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0}},
+    {"id": 3, "type": "stat", "title": "Worker Failed", "targets": [{"expr": "sum(agent_worker_runs_failed)"}], "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0}},
+    {"id": 4, "type": "timeseries", "title": "Request Duration Sum", "targets": [{"expr": "sum by (path) (agent_http_request_duration_seconds_sum)"}], "gridPos": {"h": 10, "w": 24, "x": 0, "y": 8}}
+  ]
+}
