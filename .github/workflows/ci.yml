@@ -8,7 +8,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
       - run: pip install '.[test,lint]'
-      - run: ruff check app migrations scripts tests
+      - name: Run Ruff
+        run: |
+          python -m ruff --version
+          python -m ruff check app migrations scripts tests
       - run: python scripts/check_repo_hygiene.py
       - run: pytest --cov=app --cov-report=html --cov-report=term --junitxml=test-results/junit.xml
 
